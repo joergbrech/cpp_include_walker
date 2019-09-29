@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::vec::Vec;
 
 extern crate nom;
 use nom::sequence::delimited;
@@ -8,7 +9,32 @@ use nom::character::complete::{char, multispace0};
 use nom::branch::alt;
 use nom::bytes::complete::{is_not, tag};
 
-// help function for file io
+// get all dependencies of a cpp file
+fn get_deps<P>(filename: P) -> Vec::<String>
+where P: AsRef<Path>, {
+    let mut deps = Vec::<String>::new();
+
+    // File hosts must exist in current path before this produces output
+    if let Ok(lines) = read_lines(filename) {
+        // Consumes the iterator, returns an (Optional) String
+        for res in lines {
+            if res.is_ok() {
+                let line = res.unwrap();
+                let output = include_parser(&line);
+                if output.is_ok() { 
+                    let (_, header) = output.unwrap();
+                    deps.push(header.to_string());
+                }
+            }
+        }
+    }
+    else {
+        println!("Could not open file.");
+    }
+    return deps;
+}
+
+// helper function for file io
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where P: AsRef<Path>, {
     let file = File::open(filename)?;
@@ -33,21 +59,7 @@ fn include_parser(input: &str) -> nom::IResult<&str, &str> {
 fn main() {
     let filename = "/home/jan/winhome/Tools/tigl/src/engine_nacelle/CCPACSNacelleCenterCowl.cpp";
 
-    // File hosts must exist in current path before this produces output
-    if let Ok(lines) = read_lines(filename) {
-        // Consumes the iterator, returns an (Optional) String
-        for res in lines {
-            if res.is_ok() {
-                let line = res.unwrap();
-                let output = include_parser(&line);
-                if output.is_ok() { 
-                    println!("{:?}",output.unwrap());
-                }
-            }
-        }
-    }
-    else {
-        println!("Could not open file {0}.", filename)
-    }
+    let deps = get_deps(filename);
+    println!("{:?}", deps);
 
 }
