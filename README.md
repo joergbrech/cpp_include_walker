@@ -7,4 +7,4 @@ The idea is to parse all of the `#include` statements in a set of `.cpp`, `.cxx`
  - finding superfluous `#include` statements
  - sort header files topologically.
  
-In the long run, it would be awesome if we could automatically generate `.i` files for swig using this.
+In the long run, it would be awesome if we could automatically generate `.i` files for swig using this. Or maybe create automated PRs to clean up C++ projects on Github/Gitlab?
