@@ -122,7 +122,10 @@ pub mod file_io {
 pub mod simple_graph {
     /// A trait for simple graphs
     pub trait SimpleGraph {
+
+        /// Node type
         type N;
+
         /// get all nodes
         fn get_nodes(&self) -> Vec::<&Self::N>;
 
@@ -196,6 +199,11 @@ pub mod dependency_forest {
     }
 
     /// A class that implements the dependency forest, i.e. a set of trees
+    ///
+    /// Basically, this is just a hash_map of nodes with a 
+    /// [SimpleGraph](trait.SimpleGraph) implementation for the node type
+    /// [DependencyNode](DependencyNode).
+    //TODO fix these broken docstring links
     #[derive(Default, Debug)]
     pub struct DependencyForest {
         /// The source directory
