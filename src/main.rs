@@ -128,6 +128,7 @@ struct DependencyNode {
 
 #[derive(Default, Debug)]
 struct DependencyForest {
+    directory: String,                          // The source directory
     node_map: HashMap<String, DependencyNode>,  // a hash map of dependencies
 }
 
@@ -137,6 +138,8 @@ impl DependencyForest {
     fn fill_from_directory<P>(&mut self, dir: P, recursive: bool)
     where P: AsRef<Path> + Copy
     {
+        self.directory = dir.as_ref().to_str().unwrap().to_string();
+
         // apply self.add_includes_from_file to all files found in dir
         crate::file_io::ls_src(dir, &mut |p| self.add_includes_from_file(p), recursive);
     }
@@ -165,10 +168,11 @@ impl DependencyForest {
                 let deps = &crate::file_io::get_deps(&path);
 
                 // remember path and dependencies
-                // TODO: strip source directory!!
-                entry.path = Some(path.as_ref().to_str().unwrap().to_string());
-                // TODO: keyify!!
-                entry.uses = deps.to_vec();
+                entry.path = Some(path.as_ref().strip_prefix(&self.directory)
+                    .unwrap().to_str().unwrap().to_string());
+                entry.uses = deps.to_vec().iter().map(|x| keyify(&x).unwrap()).collect();
+                
+                deps.to_vec();
 
                 // now append the used_by vector of all dependencies
                 for i in 0..deps.len() {
@@ -206,8 +210,11 @@ impl DependencyForest {
 
 
 fn main() {
+    // let dir = "/home/jan/winhome/Tools/tigl/src/geometry";
+    let dir = "../tigl/src/geometry";
+
     let mut forest: DependencyForest = Default::default();
-    forest.fill_from_directory("/home/jan/winhome/Tools/tigl/src/geometry", true);
+    forest.fill_from_directory(dir, true);
     let topo_sort = forest.topologically_sorted_vec();
 
     println!("The first root of the dependency forest:");
