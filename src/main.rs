@@ -16,12 +16,33 @@ mod file_io {
     use nom::branch::alt;
     use nom::bytes::complete::{is_not, tag};
 
+    // helper function for file parsing
+    fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+    where P: AsRef<Path>, {
+        let file = File::open(filename)?;
+        Ok(io::BufReader::new(file).lines())
+    }
+
+    // parser for #include statements
+    fn include_parser(input: &str) -> nom::IResult<&str, &str> {
+
+        let alt_match = alt((
+            delimited(char('"'), is_not("\""), char('\"')),     // #include "..."
+            delimited(char('<'), is_not(">"), char('>')),       // #include <...>
+        ));
+
+        let (input, _) = tag("#include")(input)?;
+        let (input, _) = multispace0(input)?;
+        let (input, header) = alt_match(input)?;
+
+        Ok((input, header))
+    }
+
     // parse all dependencies of a cpp source or header file
     pub fn get_deps<P>(filename: P) -> Vec::<String>
     where P: AsRef<Path>, {
         let mut deps = Vec::<String>::new();
 
-        // File hosts must exist in current path before this produces output
         if let Ok(lines) = read_lines(filename) {
             // Consumes the iterator, returns an (Optional) String
             for res in lines {
@@ -39,28 +60,6 @@ mod file_io {
             println!("Could not open file.");
         }
         return deps;
-    }
-
-    // helper function for file parsing
-    fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
-    where P: AsRef<Path>, {
-        let file = File::open(filename)?;
-        Ok(io::BufReader::new(file).lines())
-    }
-
-    // parser for #include statements
-    fn include_parser(input: &str) -> nom::IResult<&str, &str> {
-
-    let alt_match = alt((
-        delimited(char('"'), is_not("\""), char('\"')),     // #include "..."
-        delimited(char('<'), is_not(">"), char('>')),       // #include <...>
-    ));
-
-    let (input, _) = tag("#include")(input)?;
-    let (input, _) = multispace0(input)?;
-    let (input, header) = alt_match(input)?;
-
-    Ok((input, header))
     }
 
     // recursively find all files and apply function func to the path of the file
@@ -89,7 +88,7 @@ mod file_io {
     }
 } // mod file_io
 
-/* keyify turns a path or a string to a somewhat unique key to keep track of dependencies
+/* keyify turns a path or a string to a *somewhat* unique key to keep track of dependencies
  *
  * takes a path, reduce it to the file_stem and 
  *   - append "_hdr" if there is no extension or the extension is any of .h, .hpp, .hxx; or 
@@ -124,6 +123,7 @@ where P: AsRef<Path>
 struct DependencyNode {
     path: Option<String>,     // path to file, if it exists in the searched directory
     used_by: Vec<String>,     // adjacency list (who depends on me)
+    uses: Vec<String>,        // adjacency list (who do I depend on)
 }
 
 #[derive(Default, Debug)]
@@ -162,11 +162,14 @@ impl DependencyForest {
                 // register file if not registered
                 let entry = self.node_map.entry(kf.to_string()).or_insert(Default::default());
 
-                // remember path 
+                let deps = crate::file_io::get_deps(&path);
+
+                // remember path and dependencies
                 // TODO: strip source directory!!
                 entry.path = Some(path.as_ref().to_str().unwrap().to_string());
+                entry.uses = deps;
 
-                let deps = crate::file_io::get_deps(&path);
+                // now append the used_by vector of all dependencies
                 for i in 0..deps.len() {
                     let key = keyify(&deps[i]);
 
@@ -196,7 +199,7 @@ impl DependencyForest {
         res.sort_by(|a, b| a.used_by.len().cmp(&b.used_by.len()) );
         return res;
 
-        //TODO: Implement Kahn or smth. Currently this is only sorted by how often a dependency is used
+        //TODO: Implement Kahn or smth. First, find circular dependencies
     }
 }
 
