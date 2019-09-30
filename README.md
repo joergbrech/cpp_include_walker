@@ -9,7 +9,7 @@ In the long run, it would be awesome if this could be used to automatically gene
 
 ## Note
 
-Other tools use a compiler to print aut the AST.
+Other tools use a compiler to obtain the AST.
 
  - **Con**:
  Additional dependency, how would you do this platform-independently? 

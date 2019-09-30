@@ -162,12 +162,13 @@ impl DependencyForest {
                 // register file if not registered
                 let entry = self.node_map.entry(kf.to_string()).or_insert(Default::default());
 
-                let deps = crate::file_io::get_deps(&path);
+                let deps = &crate::file_io::get_deps(&path);
 
                 // remember path and dependencies
                 // TODO: strip source directory!!
                 entry.path = Some(path.as_ref().to_str().unwrap().to_string());
-                entry.uses = deps;
+                // TODO: keyify!!
+                entry.uses = deps.to_vec();
 
                 // now append the used_by vector of all dependencies
                 for i in 0..deps.len() {
@@ -209,10 +210,8 @@ fn main() {
     forest.fill_from_directory("/home/jan/winhome/Tools/tigl/src/geometry", true);
     let topo_sort = forest.topologically_sorted_vec();
 
-    println!("Get the first couple of roots");
-    for i in 0..20 { //topo_sort.len() {
-        println!("{:?}", topo_sort[i]);
-    }
+    println!("The first root of the dependency forest:");
+    println!("{:?}", topo_sort[0]);
 
     println!("\n Who uses std::vector? \n {:?}", forest.node_map["vector_hdr"]);
 }
