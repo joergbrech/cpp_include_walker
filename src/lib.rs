@@ -1,5 +1,6 @@
+
 /// Module used for file IO
-mod file_io {
+pub mod file_io {
 
     use std::io::{self, BufRead};
     use std::fs;
@@ -78,9 +79,11 @@ mod file_io {
     ///
     /// # Examples
     ///
+    /// Lets print all files in the current directory, but not in the subdirectories
+    //
     /// ```
-    /// let mut v = Veec::<String>::new();
-    /// ls_src('.', &mut |p| res.push(p), true);
+    /// let mut v = Vec::<String>::new();
+    /// ls_apply('.', &mut |p| res.push(p), false);
     /// println!("{:?}", v);
     /// ```
     ///
@@ -89,7 +92,7 @@ mod file_io {
     ///  - `func`: A function that can be converted to `FnMut(String)`
     ///  - `recursive`: bool wether to recurse into subdirectories of `dir`. 
     /// 
-    pub fn ls_src<P,F>(dir: P, func: &mut F, recursive: bool)
+    pub fn ls_apply<P,F>(dir: P, func: &mut F, recursive: bool)
     where P: AsRef<Path> + Copy, 
           F: FnMut(String)
     {
@@ -102,7 +105,7 @@ mod file_io {
                 if md.is_dir() {
                     if recursive {
                         // recurse into subdir
-                        ls_src(p.to_str().unwrap(), func, recursive);
+                        ls_apply(p.to_str().unwrap(), func, recursive);
                     }
                 }
                 else {
@@ -114,10 +117,39 @@ mod file_io {
     }
 } // mod file_io
 
+
+/// Simple graph functionality
+pub mod simple_graph {
+    /// A trait for simple graphs
+    pub trait SimpleGraph {
+        type N;
+        /// get all nodes
+        fn get_nodes(&self) -> Vec::<&Self::N>;
+
+        /// get all children of a node
+        fn children(&self, node: &Self::N) -> Vec::<&Self::N>;
+
+        /// get topologically sorted vector of nodes
+        fn get_topological_order(&self) -> Vec::<&Self::N> {
+            let mut res = self.get_nodes();
+            
+            res.sort_by(|a, b| self.children(a).len().cmp(&self.children(b).len()) );
+            return res;
+
+            //TODO: Implement Kahn or smth. First, find circular dependencies
+        }
+    }
+}
+
+
+/// module for all dependency tracking
 pub mod dependency_forest {
     use std::path::Path;
     use std::vec::Vec;
     use std::collections::HashMap;
+
+    use crate::file_io::ls_apply;
+    use crate::simple_graph::SimpleGraph;
 
     /// keyify turns a path or a string to a *somewhat* unique key to keep track of dependencies
     ///
@@ -150,7 +182,7 @@ pub mod dependency_forest {
         }
     }
 
-    /// A node in the dependency forest of a source base
+    /// A node in the dependency forest
     ///
     /// The nodes are collected from all the `#include`s found in the source directory
     #[derive(Default, Debug)]
@@ -181,7 +213,7 @@ pub mod dependency_forest {
             self.directory = dir.as_ref().to_str().unwrap().to_string();
 
             // apply self.add_includes_from_file to all files found in dir
-            crate::file_io::ls_src(dir, &mut |p| self.add_includes_from_file(p), recursive);
+            ls_apply(dir, &mut |p| self.add_includes_from_file(p), recursive);
         }
 
         /// add all `#include`s of a file as a node to the `node_map`, if it doesn't exist
@@ -234,18 +266,29 @@ pub mod dependency_forest {
                 Err(why) => println!("{:?}", why)
             }
         }
+    }
 
-        /// get topologically sorted list of nodes
-        pub fn topologically_sorted_vec(&self) -> Vec::<&DependencyNode> {
-            let mut res = Vec::<&DependencyNode>::new();
-            res.reserve(self.node_map.len());
-            for (_, entry) in &self.node_map {
-                res.push(entry);
-            }
-            res.sort_by(|a, b| a.used_by.len().cmp(&b.used_by.len()) );
-            return res;
 
-            //TODO: Implement Kahn or smth. First, find circular dependencies
+    impl SimpleGraph for DependencyForest {
+
+        type N = DependencyNode;
+
+        fn children(&self, node: &Self::N) -> Vec::<&Self::N> {
+            let mut v = Vec::<&Self::N>::new();
+            v.reserve(node.uses.len());
+            for i in 0..node.uses.len() {
+                v.push(&self.node_map[&node.uses[i]]);
+            } 
+            v
+        }
+
+        fn get_nodes(&self) -> Vec::<&Self::N> {
+            let mut v = Vec::<&Self::N>::new();
+            for (_, val) in self.node_map.iter() {
+                v.push(val);
+            } 
+            v
         }
     }
+
 } // mod dependency_forest
