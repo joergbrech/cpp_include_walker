@@ -88,7 +88,6 @@ where P: AsRef<Path>, {
 /// println!("{:?}", v);
 ///
 /// assert_eq!(v.len(), 5);
-/// assert_eq!(v[0], "./.gitignore");
 /// ```
 ///
 /// # Input
