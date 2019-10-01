@@ -1,5 +1,3 @@
-#![crate_name = "cpp_include_walker"]
-
 use cpp_include_walker::dependency_forest::DependencyForest;
 use cpp_include_walker::simple_graph::SimpleGraph;
 
