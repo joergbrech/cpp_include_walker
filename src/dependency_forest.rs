@@ -44,11 +44,11 @@ where P: AsRef<Path>
 #[derive(Default, Debug)]
 pub struct DependencyNode {
     /// path to file, if it exists in the searched directory
-    path: Option<String>,
+    pub path: Option<String>,
     /// adjacency list (who depends on me)
-    used_by: Vec<String>,
+    pub used_by: Vec<String>,
     /// adjacency list (who do I depend on)
-    uses: Vec<String>,        
+    pub uses: Vec<String>,        
 }
 
 /// A class that implements the dependency forest, i.e. a set of trees
@@ -148,5 +148,27 @@ impl SimpleGraph for DependencyForest {
             v.push(val);
         } 
         v
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn keyify_err() {
+        assert!(keyify(".").is_err());
+    }
+
+    #[test]
+    fn keyify_val() {
+        assert_eq!(keyify("/who/even/cares.h").unwrap(), "cares_hdr");
+        assert_eq!(keyify("a.hxx").unwrap(), "a_hdr");
+        assert_eq!(keyify("a.hpp").unwrap(), "a_hdr");
+        assert_eq!(keyify("a.h").unwrap(), "a_hdr");
+        assert_eq!(keyify("a.cxx").unwrap(), "a_src");
+        assert_eq!(keyify("a.cpp").unwrap(), "a_src");
+        assert_eq!(keyify("a.c").unwrap(), "a_src");
+        assert_eq!(keyify("a.whoevencares").unwrap(), "a");
     }
 }

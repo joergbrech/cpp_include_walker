@@ -36,7 +36,7 @@ fn include_parser(input: &str) -> nom::IResult<&str, &str> {
         delimited(char('"'), is_not("\""), char('\"')),     // #include "..."
         delimited(char('<'), is_not(">"), char('>')),       // #include <...>
     ));
-
+    let (input, _) = multispace0(input)?;
     let (input, _) = tag("#include")(input)?;
     let (input, _) = multispace0(input)?;
     let (input, header) = alt_match(input)?;
@@ -118,4 +118,45 @@ where P: AsRef<Path> + Copy,
             }
         },
     }    
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn include_parser_err() {
+        assert!(include_parser("noinclude").is_err());
+        assert!(include_parser("#include <>").is_err());
+        assert!(include_parser("#include \"\"").is_err());
+    }
+
+    #[test]
+    fn include_parser_ok() {
+        assert!(include_parser("#include < >").is_ok());
+        assert!(include_parser("#include \" \"").is_ok());
+        assert!(include_parser("#include <b.cpp>").is_ok());
+        assert!(include_parser("#include <a.hpp>").is_ok());
+        assert!(include_parser("#include<b.cpp>").is_ok());
+        assert!(include_parser(" #include <a.hpp>").is_ok());
+    }
+
+    #[test]
+    fn include_parser_val() {
+        assert_eq!(include_parser("#include <a0.h>").unwrap(), ("", "a0.h"));
+        assert_eq!(include_parser("#include \"b1.h\"").unwrap(), ("", "b1.h"));
+    }
+
+    #[test]
+    fn read_lines_err() {
+        assert!(read_lines("not/a/valid/path").is_err());
+    }
+ 
+    #[test]
+    fn read_lines_val() {
+        let mut lines = read_lines("./Cargo.toml").unwrap();
+        assert_eq!(lines.next().unwrap().unwrap(), "[package]");
+    }
+
+    
 }

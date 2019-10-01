@@ -2,7 +2,6 @@ use cpp_include_walker::dependency_forest::DependencyForest;
 use cpp_include_walker::simple_graph::get_topological_order;
 
 fn main() {
-    // let dir = "/home/jan/winhome/Tools/tigl/src/geometry";
     let dir = "../tigl/src/geometry";
 
     let mut forest: DependencyForest = Default::default();
