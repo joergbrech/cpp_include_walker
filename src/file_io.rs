@@ -87,7 +87,7 @@ where P: AsRef<Path>, {
 /// ls_apply(".", &mut |p| v.push(p), false);
 /// println!("{:?}", v);
 ///
-/// assert_eq!(v.len(), 4);
+/// assert_eq!(v.len(), 5);
 /// assert_eq!(v[0], "./.gitignore");
 /// ```
 ///
