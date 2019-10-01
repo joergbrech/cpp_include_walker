@@ -53,10 +53,9 @@ pub struct DependencyNode {
 
 /// A class that implements the dependency forest, i.e. a set of trees
 ///
-/// Basically, this is just a hash_map of nodes with a 
-/// [SimpleGraph](trait.SimpleGraph) implementation for the node type
-/// [DependencyNode](DependencyNode).
-//TODO fix these broken docstring links
+/// Basically, this is just a [`HashMap`](https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html) of nodes with a 
+/// [`SimpleGraph`](../simple_graph/trait.SimpleGraph.html) implementation for the node type
+/// [`DependencyNode`](struct.DependencyNode.html).
 #[derive(Default, Debug)]
 pub struct DependencyForest {
     /// The source directory

@@ -12,14 +12,14 @@ pub trait SimpleGraph {
 
     /// get all children of a node
     fn children(&self, node: &Self::N) -> Vec::<&Self::N>;
+}
 
-    /// get topologically sorted vector of nodes
-    fn get_topological_order(&self) -> Vec::<&Self::N> {
-        let mut res = self.get_nodes();
-        
-        res.sort_by(|a, b| self.children(a).len().cmp(&self.children(b).len()) );
-        return res;
+/// get topologically sorted vector of nodes for a graph
+pub fn get_topological_order<G: SimpleGraph>(graph: &G) -> Vec::<&G::N> {
+    let mut res = graph.get_nodes();
+    
+    res.sort_by(|a, b| graph.children(a).len().cmp(&graph.children(b).len()) );
+    return res;
 
-        //TODO: Implement Kahn or smth. First, find circular dependencies
-    }
+    //TODO: Implement Kahn or smth. First, find circular dependencies
 }
