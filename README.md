@@ -1,7 +1,7 @@
 # C++ Include Walker
 
 The idea is to parse all of the `#include` statements in a set of `.cpp`, `.cxx`, `.c`, `.h`, `.hpp`, `.hxx` files, build a *depencency forest* and provide some functionality, such as
- - finding circular dependencies, 
+ - finding circular dependencies *(either using Johnson's alg, or during topo sort by Kahn's method)*, 
  - finding superfluous `#include` statements *(superfluous in the sense of "include only what you need")*
  - sort header files topologically.
  
