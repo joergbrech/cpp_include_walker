@@ -1,5 +1,4 @@
-//! Simple graph functionality
-
+//! simple graph functionality specially purposed for topo sort
 
 /// A trait for simple graphs
 pub trait SimpleGraph {
@@ -17,14 +16,46 @@ pub trait SimpleGraph {
     fn len(&self) -> usize {
         self.get_nodes().len()
     }
-}
 
-/// get topologically sorted vector of nodes for a graph
-pub fn get_topological_order<G: SimpleGraph>(graph: &G) -> Vec::<&G::N> {
-    let mut res = graph.get_nodes();
-    
-    res.sort_by(|a, b| graph.children(a).len().cmp(&graph.children(b).len()) );
-    return res;
+    /// get topologically sorted vector of nodes for a graph
+    fn get_topological_order(&self) -> Result<Vec::<&Self::N>, &'static str> {
 
-    //TODO: Implement Kahn or smth. First, find circular dependencies
+        // Kahn's method
+        let nodes = self.get_nodes();
+        let n = nodes.len();
+
+        // calculate in-degree
+        let mut in_degree = vec!(0; n);
+        // TODO!!
+
+        // initialize candidate list and return list
+        let mut candidates = Vec::<&Self::N>::new();
+        let mut list = Vec::<&Self::N>::new();
+
+        // candidates are all nodes with zero in-degree
+        for i in 0..n {
+            if in_degree[i] == 0 {
+                candidates.push(nodes[i]);
+            }
+        }
+
+        while candidates.len() > 0 {
+            let node = candidates.pop().unwrap();
+            list.push(node);
+
+            let children = self.children(node);
+            for i in 0..children.len() {
+                in_degree[i] -= 1;
+                if in_degree[i] == 0 {
+                    candidates.push(nodes[i]);
+                }
+            }
+        }
+        if list.len() == n {
+            return Ok(list);
+        }
+        else {
+            return Err("Circular dependency detected!")
+        }
+    }
 }
