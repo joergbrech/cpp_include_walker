@@ -157,5 +157,19 @@ mod tests {
         assert_eq!(lines.next().unwrap().unwrap(), "[package]");
     }
 
-    
+/*
+    #[test]
+    fn get_deps_err() {
+        assert!(get_deps("./tests/test_data/circular_dep/").is_none());
+        assert!(get_deps("not/a/file").is_err());
+    }
+*/
+
+    #[test]
+    fn get_deps_ok() {
+        assert_eq!(get_deps("./tests/test_data/circular_dep/a.h"),  ["vector"]);
+        assert_eq!(get_deps("./tests/test_data/circular_dep/b.hxx"),["vector", "a.h", "c.hpp"]);
+        assert_eq!(get_deps("./tests/test_data/circular_dep/c.hpp"),["b"]);
+    }
+
 }

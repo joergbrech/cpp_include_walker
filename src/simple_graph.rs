@@ -12,6 +12,11 @@ pub trait SimpleGraph {
 
     /// get all children of a node
     fn children(&self, node: &Self::N) -> Vec::<&Self::N>;
+
+    /// returns the number of nodes
+    fn len(&self) -> usize {
+        self.get_nodes().len()
+    }
 }
 
 /// get topologically sorted vector of nodes for a graph
