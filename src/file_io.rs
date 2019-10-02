@@ -1,4 +1,4 @@
-/// Module used for file IO
+//! parse files recursively for `#include` statements
 
 
 use std::io::{self, BufRead};
@@ -50,28 +50,25 @@ fn include_parser(input: &str) -> nom::IResult<&str, &str> {
 /// path to file
 ///
 /// # Output
-/// Returns a vector of `#include`d dependencies
-pub fn get_deps<P>(filename: P) -> Vec::<String>
+/// Returns a vector of `#include`d dependencies if successfull, error else
+pub fn get_deps<P>(filename: P) -> Result<Vec::<String>, std::io::Error>
 where P: AsRef<Path>, {
     let mut deps = Vec::<String>::new();
 
-    if let Ok(lines) = read_lines(filename) {
-        // Consumes the iterator, returns an (Optional) String
-        for res in lines {
-            if res.is_ok() {
-                let line = res.unwrap();
+    let lines = read_lines(filename)?;
+    for res in lines {
+        match res {
+            Ok(line) => {
                 let output = include_parser(&line);
                 if output.is_ok() { 
                     let (_, header) = output.unwrap();
                     deps.push(header.to_string());
                 }
-            }
+            },
+            Err(why) => return Err(why),
         }
     }
-    else {
-        println!("Could not open file.");
-    }
-    return deps;
+    return Ok(deps);
 }
 
 /// recursively find all files and apply a function to the path of the file.
@@ -157,19 +154,17 @@ mod tests {
         assert_eq!(lines.next().unwrap().unwrap(), "[package]");
     }
 
-/*
     #[test]
     fn get_deps_err() {
-        assert!(get_deps("./tests/test_data/circular_dep/").is_none());
+        assert!(get_deps("./tests/test_data/circular_dep/").is_err());
         assert!(get_deps("not/a/file").is_err());
     }
-*/
 
     #[test]
     fn get_deps_ok() {
-        assert_eq!(get_deps("./tests/test_data/circular_dep/a.h"),  ["vector"]);
-        assert_eq!(get_deps("./tests/test_data/circular_dep/b.hxx"),["vector", "a.h", "c.hpp"]);
-        assert_eq!(get_deps("./tests/test_data/circular_dep/c.hpp"),["b"]);
+        assert_eq!(get_deps("./tests/test_data/circular_dep/a.h").unwrap(),  ["vector"]);
+        assert_eq!(get_deps("./tests/test_data/circular_dep/b.hxx").unwrap(),["vector", "a.h", "c.hpp"]);
+        assert_eq!(get_deps("./tests/test_data/circular_dep/c.hpp").unwrap(),["b"]);
     }
 
 }

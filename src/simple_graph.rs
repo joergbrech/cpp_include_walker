@@ -1,4 +1,4 @@
-/// Simple graph functionality
+//! Simple graph functionality
 
 
 /// A trait for simple graphs
