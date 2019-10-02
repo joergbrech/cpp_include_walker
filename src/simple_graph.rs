@@ -4,7 +4,7 @@
 pub trait SimpleGraph {
 
     /// Node type
-    type N : PartialEq + std::fmt::Debug;
+    type N : PartialEq;
 
     /// get all nodes
     fn nodes(&self) -> Vec::<&Self::N>;
