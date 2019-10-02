@@ -59,14 +59,28 @@ where P: AsRef<Path>
 /// A node in the dependency forest
 ///
 /// The nodes are collected from all the `#include`s found in the source directory
-#[derive(Default, Debug)]
+#[derive(Default)]
 pub struct DependencyNode {
+    /// a unique identifier
+    pub key: String,
     /// path to file, if it exists in the searched directory
     pub path: Option<String>,
     /// adjacency list (who depends on me)
     pub used_by: Vec<String>,
     /// adjacency list (who do I depend on)
     pub uses: Vec<String>,        
+}
+
+impl PartialEq for DependencyNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.key == other.key
+    }
+}
+
+impl std::fmt::Debug for DependencyNode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.key)
+    }
 }
 
 /// A class that implements the dependency forest, i.e. a set of trees
@@ -119,6 +133,7 @@ impl DependencyForest {
                 let deps = &crate::file_io::get_deps(&path).unwrap();
 
                 // remember path and `uses` dependencies
+                entry.key = kf.to_string();
                 entry.path = Some(path.as_ref().strip_prefix(&self.directory)
                     .unwrap().to_str().unwrap().to_string());
                 entry.uses = deps.to_vec().iter().map(|x| keyify(&x).unwrap()).collect();
@@ -135,6 +150,7 @@ impl DependencyForest {
                             let entry = self.node_map.entry(kd.to_string()).or_insert(Default::default());
 
                             // rememember that dependency is used by file
+                            entry.key = kd.to_string();
                             entry.used_by.push(kf.as_str().to_string());
                         },
                         Err(why) => println!("{:?}", why)
@@ -142,6 +158,31 @@ impl DependencyForest {
                 }
             },
             Err(why) => println!("{:?}", why)
+        }
+    }
+
+    /// returns number of nodes in the dependency forest
+    pub fn len(&self) -> usize {
+        self.node_map.len()
+    }
+
+    /// get include order
+    pub fn include_order(&self, with_external: bool) -> Result<Vec::<&DependencyNode>, &'static str> {
+        let topo_sort = self.get_topological_order();
+        match topo_sort {
+            Ok(mut res) => {
+                let mut ext = Vec::<&DependencyNode>::new();
+                if with_external {
+                    for i in 0..res.len() {
+                        if res[i].path == None {
+                            ext.push(res[i]);
+                        }
+                    }
+                }
+                res.retain(|&x| x.path != None);
+                return Ok([ext, res].concat());
+            },
+            Err(why) => return Err(why)
         }
     }
 }
@@ -154,13 +195,22 @@ impl SimpleGraph for DependencyForest {
     fn children(&self, node: &Self::N) -> Vec::<&Self::N> {
         let mut v = Vec::<&Self::N>::new();
         v.reserve(node.uses.len());
+        for i in 0..node.used_by.len() {
+            v.push(&self.node_map[&node.used_by[i]]);
+        } 
+        v
+    }
+
+    fn ancestors(&self, node: &Self::N) -> Vec::<&Self::N> {
+        let mut v = Vec::<&Self::N>::new();
+        v.reserve(node.uses.len());
         for i in 0..node.uses.len() {
             v.push(&self.node_map[&node.uses[i]]);
         } 
         v
     }
 
-    fn get_nodes(&self) -> Vec::<&Self::N> {
+    fn nodes(&self) -> Vec::<&Self::N> {
         let mut v = Vec::<&Self::N>::new();
         for (_, val) in self.node_map.iter() {
             v.push(val);
@@ -189,5 +239,13 @@ mod tests {
         assert_eq!(keyify("a.cpp").unwrap(), "a_src");
         assert_eq!(keyify("a.c").unwrap(), "a_src");
         assert_eq!(keyify("a.whoevencares").unwrap(), "a");
+    }
+
+    #[test]
+    #[should_panic]
+    fn topo_sort_with_circular_dependency() {
+        let mut forest: DependencyForest = Default::default();
+        forest.fill_from_directory("tests/test_data/circular_dep", true);
+        let _topo_sort = forest.get_topological_order().unwrap();
     }
 }
