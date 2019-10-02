@@ -12,14 +12,27 @@ use std::collections::HashMap;
 use crate::file_io::ls_apply;
 use crate::simple_graph::SimpleGraph;
 
-/// keyify turns a path or a string to a *somewhat* unique key to keep track of dependencies
+/// keyify turns a path or a string to a *somewhat* unique key to keep track of dependencies.
 ///
 /// It takes a path as input, reduces it to the file_stem and 
+///
 ///  - appends `"_hdr"` if the re is no extension or the extension is any of `.h`, `.hpp`, `.hxx`; or 
 ///  - appends `"_src"` if the extension is any of `.c`, `.cpp`, `.cxx`
-///  - appends nothing if there is no extension.
-/// returns `Err` if the file_stem cannot be determined
+///  - appends nothing if there is no extension,
 ///
+/// returns `Err` if the file_stem cannot be determined.
+///
+/// # Example
+///
+/// ```
+/// use cpp_include_walker::keyify;
+///
+/// assert_eq!(keyify("/path/to/file.h").unwrap(), "file_hdr");
+/// assert_eq!(keyify("a.hxx").unwrap(), "a_hdr");
+/// assert_eq!(keyify("a").unwrap(), "a_hdr");
+/// assert_eq!(keyify("a.cxx").unwrap(), "a_src");
+/// assert_eq!(keyify("a.whoevencares").unwrap(), "a");
+/// ```
 pub fn keyify<P>(path: P) -> Result<String, &'static str>
 where P: AsRef<Path>
 {
@@ -171,6 +184,7 @@ mod tests {
         assert_eq!(keyify("a.hxx").unwrap(), "a_hdr");
         assert_eq!(keyify("a.hpp").unwrap(), "a_hdr");
         assert_eq!(keyify("a.h").unwrap(), "a_hdr");
+        assert_eq!(keyify("a").unwrap(), "a_hdr");
         assert_eq!(keyify("a.cxx").unwrap(), "a_src");
         assert_eq!(keyify("a.cpp").unwrap(), "a_src");
         assert_eq!(keyify("a.c").unwrap(), "a_src");
