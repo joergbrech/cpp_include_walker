@@ -1,11 +1,10 @@
 use cpp_include_walker::DependencyForest;
-use cpp_include_walker::simple_graph::SimpleGraph;
 
 #[test]
 fn integration_test() {
     let mut forest: DependencyForest = Default::default();
     forest.fill_from_directory("tests/test_data/simple", true);
-    let topo_sort = forest.get_include_order().unwrap();
+    let topo_sort = forest.include_order(true).unwrap();
 
     assert_eq!(forest.len(), 4);
 
