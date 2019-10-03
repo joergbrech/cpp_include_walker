@@ -12,12 +12,12 @@ jobs:
     - stage: test
       script: cargo test
     - stage: benchmark
-      rust: nightly
+      rust: nightly # benchmarks are unstable
       os: linux
       script: git clone https://github.com/dlr-sc/tigl ../tigl && 
               cargo bench
     - stage: doc
-      rust: stable
+      rust: nightly # uses some unstable features
       os: linux
       if: branch = master AND type != pull_request
       script: cargo doc --no-deps &&
