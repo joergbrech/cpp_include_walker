@@ -86,8 +86,9 @@ impl std::fmt::Debug for DependencyNode {
 /// A class that implements the dependency forest, i.e. a set of trees
 ///
 /// Basically, this is just a [`HashMap`](https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html) of nodes with a 
-/// [`SimpleGraph`](../simple_graph/trait.SimpleGraph.html) implementation for the node type
+/// [`SimpleGraph`](../cpp_include_walker/simple_graph/trait.SimpleGraph.html) implementation for the node type
 /// [`DependencyNode`](struct.DependencyNode.html).
+// TODO intra-doc-links are currently a nightly feature
 #[derive(Default, Debug)]
 pub struct DependencyForest {
     /// The source directory
