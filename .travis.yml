@@ -14,7 +14,8 @@ jobs:
     - stage: benchmark
       rust: nightly
       os: linux
-      script: cargo bench
+      script: git clone https://github.com/dlr-sc/tigl ../tigl && 
+              cargo bench
     - stage: doc
       rust: stable
       os: linux
