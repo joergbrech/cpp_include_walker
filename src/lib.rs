@@ -1,5 +1,5 @@
-#![feature(external_doc)]
-#![doc(include = "../README.md")]  // <-- experimental feature
+//#![feature(external_doc)]
+//#![doc(include = "../README.md")]  // <-- experimental feature
 
 pub mod simple_graph;
 pub mod file_io;
