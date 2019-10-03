@@ -83,8 +83,6 @@ where P: AsRef<Path>, {
 /// let mut v = Vec::<String>::new();
 /// ls_apply(".", &mut |p| v.push(p), false);
 /// println!("{:?}", v);
-///
-/// assert_eq!(v.len(), 5);
 /// ```
 ///
 /// # Input
