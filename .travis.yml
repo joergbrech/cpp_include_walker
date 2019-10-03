@@ -15,7 +15,9 @@ jobs:
       rust: nightly # benchmarks are unstable
       os: linux
       script: git clone https://github.com/dlr-sc/tigl ../tigl && 
+              cd ../tigl &&
               git checkout v3.0.0 &&
+              cd ../cpp_include_walker &&
               cargo bench
     - stage: doc
       rust: nightly # uses some unstable features
