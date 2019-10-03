@@ -1,6 +1,7 @@
 # C++ Include Walker
 
 [![Build Status](https://travis-ci.org/joergbrech/cpp_include_walker.svg?branch=master)](https://travis-ci.org/joergbrech/cpp_include_walker)
+[![Build status](https://ci.appveyor.com/api/projects/status/u66p43l2g6dqjjk9?svg=true)](https://ci.appveyor.com/project/joergbrech/cpp-include-walker)
 
 [**Read the documentation**](https://joergbrech.github.io/cpp_include_walker/)
 
