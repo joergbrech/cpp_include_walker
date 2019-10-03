@@ -11,12 +11,12 @@ jobs:
   include:
     - stage: test
       script: cargo test
-    #- stage: benchmark
-    #  rust: nightly
-    #  os: linux
-    #  script: cargo bench
-    - stage: doc
+    - stage: benchmark
       rust: nightly
+      os: linux
+      script: cargo bench
+    - stage: doc
+      rust: stable
       os: linux
       if: branch = master AND type != pull_request
       script: cargo doc --no-deps &&
