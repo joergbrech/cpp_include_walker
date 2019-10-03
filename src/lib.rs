@@ -1,8 +1,7 @@
-#![feature(external_doc)]
-#![feature(intra_doc_links)] // <-- this is a cool feature to consider, for [`my_func`] in docstrings
-#[doc(include = "../README.md")]  // <-- experimental feature
-
-// A library to check the include-dependencies of a C++ project
+//! A library to check the include-dependencies of a C++ project
+// #![feature(external_doc)]
+// #![feature(intra_doc_links)] // <-- this is a cool feature to consider, for [`my_func`] in docstrings
+// #[doc(include = "../README.md")]  // <-- experimental feature
 
 pub mod simple_graph;
 pub mod file_io;
@@ -88,8 +87,10 @@ impl std::fmt::Debug for DependencyNode {
 
 /// A class that implements the dependency forest, i.e. a set of trees
 ///
-/// Basically, this is just a [`HashMap`] of nodes with a [`SimpleGraph`] implementation for the node type
-/// [`DependencyNode`].
+/// Basically, this is just a [`HashMap`](https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html) of nodes with a 
+/// [`SimpleGraph`](../cpp_include_walker/simple_graph/trait.SimpleGraph.html) implementation for the node type
+/// [`DependencyNode`](struct.DependencyNode.html).
+// TODO intra-doc-links are currently a nightly feature
 #[derive(Default, Debug)]
 pub struct DependencyForest {
     /// The source directory
