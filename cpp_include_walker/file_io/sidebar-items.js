@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["get_deps","parse all dependencies of a cpp source or header file"],["ls_apply","recursively find all files and apply a function to the path of the file. The function is not applied to directories."]]});

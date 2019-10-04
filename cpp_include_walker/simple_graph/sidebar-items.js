@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["SimpleGraph","A simple graph implementation on unordered borrowed data"]]});
